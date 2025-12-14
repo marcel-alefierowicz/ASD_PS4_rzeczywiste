@@ -19,20 +19,41 @@ public class Node
 
 class Program
 {
-    static Node insert(Node? root, float val)
+    static int max(int a, int b) { return (a > b) ? a : b; }
+    static int balanceFactor(Node? root)
     {
-        if (root == null)
-            return new(val);
-
-        if (val > root.value)
-        {
-            root.right = insert(root.right, val);
-        }
-        else if (val < root.value)
-            root.left = insert(root.left, val);
-        return root;
+        if (root is null)
+            return 0;
+        else
+            return root.left!.height - root.right!.height;
     }
+    static Node rotateLeft(Node? a)
+    {
+        //       a
+        //     /  \
+        //    /    \ 
+        // (...)    b 
+        //        /   \   
+        //      S1   (...)
 
+        // S1 is the root of a subtree with a value between a and b
+
+        Node b = a!.right!;
+        Node S1 = b.left!;
+
+        b.left = a;
+        a.right = S1;
+
+
+        b.height = 1 + max(b.left.height, b.right!.height);
+        a.height = 1 + max(a.left!.height, a.right.height);
+        //          b
+        //        /   \
+        //       a   (...)
+        //     /  \
+        // (...)   S1
+        return b;
+    }
     static bool find(Node? root, float val)
     {
         if (root == null) return false;
@@ -54,32 +75,32 @@ class Program
         return curr!;
     }
 
-    static Node delete(Node? root, float val)
-    {
-        if (root == null)
-            return root!;
+    // static Node delete(Node? root, float val)
+    // {
+    //     if (root == null)
+    //         return root!;
 
-        if (root.value > val)
-        {
-            root.left = delete(root.left, val);
-        }
-        else if (root.value < val)
-        {
-            root.right = delete(root.right, val);
-        }
-        else // if we're here, that means that we've found the value we're looking to delete
-        {
-            if (root.left == null) // either 1 or no children
-                return root.right!;
-            if (root.right == null)
-                return root.left;
-            // if two children, replace tgt node with next in line
-            Node next = nextInOrder(root);
-            root.value = next.value;
-            root.right = delete(root.right, next.value);
-        }
-        return root;
-    }
+    //     if (root.value > val)
+    //     {
+    //         root.left = delete(root.left, val);
+    //     }
+    //     else if (root.value < val)
+    //     {
+    //         root.right = delete(root.right, val);
+    //     }
+    //     else // if we're here, that means that we've found the value we're looking to delete
+    //     {
+    //         if (root.left == null) // either 1 or no children
+    //             return root.right!;
+    //         if (root.right == null)
+    //             return root.left;
+    //         // if two children, replace tgt node with next in line
+    //         Node next = nextInOrder(root);
+    //         root.value = next.value;
+    //         root.right = delete(root.right, next.value);
+    //     }
+    //     return root;
+    // }
 
     static void printTree(Node? root, int indent)
     {
@@ -112,12 +133,12 @@ class Program
         {
             case 'W':
                 {
-                    root = insert(root, key);
+                    // root = insert(root, key);
                     break;
                 }
             case 'U':
                 {
-                    root = delete(root, key);
+                    // root = delete(root, key);
                     break;
                 }
             case 'S':
@@ -167,12 +188,6 @@ class Program
         }
         sw.Stop();
         System.Console.WriteLine($"DONE! execution time: {sw.ElapsedMilliseconds}ms");
-        // if (find(root, 0))
-        // {
-        //     System.Console.WriteLine("found 0");
-        // }
-        // else System.Console.WriteLine("nope");
-
 
     }
 }
