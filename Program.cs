@@ -1,17 +1,18 @@
-﻿
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Globalization;
 
 public class Node
 {
-    public Node? left { get; set; }
-    public Node? right { get; set; }
-    public float value { get; set; }
+    public Node? left;
+    public Node? right;
+    public float value;
+    public int height { get; set; }
     public Node(float value)
     {
         left = null;
         right = null;
         this.value = value;
+        height = 1;
     }
 }
 
@@ -30,12 +31,6 @@ class Program
         else if (val < root.value)
             root.left = insert(root.left, val);
         return root;
-    }
-
-    static int height(Node? root)
-    {
-        if (root == null) return 0;
-        return 1 + Math.Max(height(root.left), height(root.right));
     }
 
     static bool find(Node? root, float val)
