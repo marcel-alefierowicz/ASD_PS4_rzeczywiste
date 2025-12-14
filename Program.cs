@@ -1,7 +1,6 @@
 ﻿
 using System.Diagnostics;
 using System.Globalization;
-using System.Runtime.InteropServices;
 
 public class Node
 {
@@ -28,9 +27,8 @@ class Program
         {
             root.right = insert(root.right, val);
         }
-        else
+        else if (val < root.value)
             root.left = insert(root.left, val);
-
         return root;
     }
 
@@ -99,23 +97,21 @@ class Program
             printTree(root.left, indent + 4);
         }
     }
-
     static int countOccurrences(Node? root, int key)
     {
         if (root == null)
             return 0;
 
-        int integerPart = (int)root.value;
-
-        int match = (integerPart == key) ? 1 : 0;
+        int match = ((int)root.value == key) ? 1 : 0;
 
         return match
              + countOccurrences(root.left, key)
              + countOccurrences(root.right, key);
     }
+
     static void parseCommand((char command, float value) operation, ref Node? root, ref int count)
     {
-        count++;
+        count++; // count of operations for speed tracking purposes
         (char c, float key) = operation;
         switch (c)
         {
@@ -132,17 +128,17 @@ class Program
             case 'S':
                 {
                     if (find(root, key))
-                        // System.Console.WriteLine($"[{count}] Found {key}");
-                        System.Console.WriteLine($"TAK");
+                        System.Console.WriteLine($"[{count}] Found {key}");
+                    // System.Console.WriteLine($"TAK");
                     else
-                        // System.Console.WriteLine($"[{count}] Did not find {key}");
-                        System.Console.WriteLine($"NIE");
+                        System.Console.WriteLine($"[{count}] Did not find {key}");
+                    // System.Console.WriteLine($"NIE");
                     break;
                 }
             case 'L':
                 {
-                    // System.Console.WriteLine($"[{count}] starting with {key}: {countOccurrences(root, (int)key)}");
-                    System.Console.WriteLine(countOccurrences(root, (int)key));
+                    System.Console.WriteLine($"[{count}] starting with {key}: {countOccurrences(root, (int)key)}");
+                    // System.Console.WriteLine(countOccurrences(root, (int)key));
                     break;
                 }
             default:
