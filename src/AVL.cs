@@ -149,7 +149,7 @@ public class AVL
             root.value = next.value;
             root.right = delete(root.right, next.value);
         }
-        root.height = max(Height(root.left), Height(root.right));
+        root.height = 1 + max(Height(root.left), Height(root.right));
 
         int bf = balanceFactor(root);
         int bfr = balanceFactor(root.right);
