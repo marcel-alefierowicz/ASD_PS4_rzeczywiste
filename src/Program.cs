@@ -28,7 +28,7 @@ class Program
                     findCli();
                     break;
                 case "4":
-                    lProcedureCli();
+                    LProcedureCli();
                     break;
                 case "5":
                     printTreeCli();
@@ -73,10 +73,16 @@ class Program
             Console.WriteLine("Invalid number.");
             return;
         }
-
         count++;
-        root = AVL.insert(root, value);
-        Console.WriteLine($"[{count}] Inserted {value}");
+        if (!AVL.find(root, value))
+        {
+            root = AVL.insert(root, value);
+            Console.WriteLine($"[{count}] Inserted {value}");
+        }
+        else
+        {
+            Console.WriteLine($"[{count}] {value} already exists - no duplicates allowed");
+        }
     }
 
     static void deleteCli()
@@ -115,7 +121,7 @@ class Program
             Console.WriteLine($"[{count}] Did not find {value}");
     }
 
-    static void lProcedureCli()
+    static void LProcedureCli()
     {
         if (!tryReadFloat(out float value))
         {
