@@ -20,12 +20,14 @@ public class Node
 class Program
 {
     static int max(int a, int b) { return (a > b) ? a : b; }
+
+    static int Height(Node? n)
+    {
+        return n?.height ?? 0;
+    }
     static int balanceFactor(Node? root)
     {
-        if (root is null)
-            return 0;
-        else
-            return root.left!.height - root.right!.height;
+        return root == null ? 0 : Height(root.left) - Height(root.right);
     }
     static Node rotateLeft(Node? a)
     {
@@ -43,8 +45,8 @@ class Program
         a.right = sub;
 
 
-        b.height = 1 + max(b.left.height, b.right.height);
-        a.height = 1 + max(a.left.height, a.right.height);
+        a.height = 1 + max(Height(a.left), Height(a.right));
+        b.height = 1 + max(Height(b.left), Height(b.right));
         //          b
         //        /   \
         //       a   (...)
@@ -61,20 +63,60 @@ class Program
         //     /   \ 
         //  (...)  sub
         // 
-        Node b = a.left;
-        Node sub = b.right;
+
+        Node? b = a!.left;
+        Node? sub = b!.right;
 
         b.right = a;
         a.left = sub;
 
-        b.height = 1 + max(b.left.height, b.right.height);
-        a.height = 1 + max(a.left.height, a.right.height);
+        a.height = 1 + max(Height(a.left), Height(a.right));
+        b.height = 1 + max(Height(b.left), Height(b.right));
+
         //           b
         //         /   \ 
         //      (...)   a
         //            /   \
         //         sub   (...)
-        return a;
+        return b;
+    }
+
+    static Node insert(Node? root, float val)
+    {
+        if (root == null)
+            return new(val);
+        if (val > root.value)
+            root.right = insert(root.right, val);
+        else if (val < root.value)
+            root.left = insert(root.left, val);
+
+        root.height = 1 + max(Height(root.left), Height(root.right));
+
+        int bf = balanceFactor(root);
+        int bfr = balanceFactor(root.right);
+        int bfl = balanceFactor(root.left);
+        // 1. RR: (bf(root) > 1 & bf(root.left) == 1) => rotateRight
+        if (bf > 1 && bfl == 1)
+            return rotateRight(root);
+
+        // 2. LL: (bf(root) < -1 & bf(root.right) == -1) => rotateLeft
+        if (bf < -1 && bfr == -1)
+            return rotateLeft(root);
+
+        // 3. LR: (bf(root) > 1 & bf(root.left) == -1) => rotateLeft => rotateRight
+        if (bf > 1 && bfl == -1)
+        {
+            root.left = rotateLeft(root.left);
+            return rotateRight(root);
+
+        }
+        // 4. RL: (bf(root) > 1 & bf(root.left) == -1) => rotateLeft => rotateRight
+        if (bf < -1 && bfr == 1)
+        {
+            root.right = rotateRight(root.right);
+            return rotateLeft(root);
+        }
+        return root;
     }
 
     static bool find(Node? root, float val)
@@ -97,33 +139,6 @@ class Program
         }
         return curr!;
     }
-
-    // static Node delete(Node? root, float val)
-    // {
-    //     if (root == null)
-    //         return root!;
-
-    //     if (root.value > val)
-    //     {
-    //         root.left = delete(root.left, val);
-    //     }
-    //     else if (root.value < val)
-    //     {
-    //         root.right = delete(root.right, val);
-    //     }
-    //     else // if we're here, that means that we've found the value we're looking to delete
-    //     {
-    //         if (root.left == null) // either 1 or no children
-    //             return root.right!;
-    //         if (root.right == null)
-    //             return root.left;
-    //         // if two children, replace tgt node with next in line
-    //         Node next = nextInOrder(root);
-    //         root.value = next.value;
-    //         root.right = delete(root.right, next.value);
-    //     }
-    //     return root;
-    // }
 
     static void printTree(Node? root, int indent)
     {
@@ -156,14 +171,14 @@ class Program
         {
             case 'W':
                 {
-                    // root = insert(root, key);
+                    root = insert(root, key);
                     break;
                 }
-            case 'U':
-                {
-                    // root = delete(root, key);
-                    break;
-                }
+            // case 'U':
+            //     {
+            //         // root = delete(root, key);
+            //         break;
+            //     }
             case 'S':
                 {
                     if (find(root, key))
@@ -174,12 +189,12 @@ class Program
                     // System.Console.WriteLine($"NIE");
                     break;
                 }
-            case 'L':
-                {
-                    System.Console.WriteLine($"[{count}] starting with {key}: {countOccurrences(root, (int)key)}");
-                    // System.Console.WriteLine(countOccurrences(root, (int)key));
-                    break;
-                }
+            // case 'L':
+            //     {
+            //         System.Console.WriteLine($"[{count}] starting with {key}: {countOccurrences(root, (int)key)}");
+            //         // System.Console.WriteLine(countOccurrences(root, (int)key));
+            //         break;
+            //     }
             default:
                 break;
         }
@@ -209,6 +224,7 @@ class Program
         {
             parseCommand(commands[i], ref root, ref count);
         }
+        // printTree(root, 5);
         sw.Stop();
         System.Console.WriteLine($"DONE! execution time: {sw.ElapsedMilliseconds}ms");
 
