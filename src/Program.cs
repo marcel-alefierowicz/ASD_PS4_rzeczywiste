@@ -1,70 +1,188 @@
 ﻿using System.Diagnostics;
 using System.Globalization;
+
 class Program
 {
-    static void parseCommand((char command, float value) operation, ref Node? root, ref int count)
-    {
-        count++; // count of operations for speed tracking purposes
-        (char c, float key) = operation;
-        switch (c)
-        {
-            case 'W':
-                {
-                    root = AVL.insert(root, key);
-                    break;
-                }
-            case 'U':
-                {
-                    root = AVL.delete(root, key);
-                    break;
-                }
-            case 'S':
-                {
-                    if (AVL.find(root, key))
-                        System.Console.WriteLine($"[{count}] Found {key}");
-                    // System.Console.WriteLine($"TAK");
-                    else
-                        System.Console.WriteLine($"[{count}] Did not find {key}");
-                    // System.Console.WriteLine($"NIE");
-                    break;
-                }
-            case 'L':
-                {
-                    System.Console.WriteLine($"[{count}] starting with {key}: {AVL.countOccurrences(root, (int)key)}");
-                    // System.Console.WriteLine(AVL.countOccurrences(root, (int)key));
-                    break;
-                }
-            default:
-                break;
-        }
-    }
+    static Node? root = null;
+    static int count = 0;
+    static CultureInfo cul = new CultureInfo("de-DE");
+
     static void Main()
     {
-        Node? root = null;
-        int count = 0;
-        string[] lines = File.ReadAllLines("./in/duzy1.txt");
+        while (true)
+        {
+            printMenu();
+            Console.Write("Choose option: ");
+            string? choice = Console.ReadLine();
+            Console.WriteLine();
+
+            switch (choice)
+            {
+                case "1":
+                    insertCli();
+                    break;
+                case "2":
+                    deleteCli();
+                    break;
+                case "3":
+                    findCli();
+                    break;
+                case "4":
+                    lProcedureCli();
+                    break;
+                case "5":
+                    printTreeCli();
+                    break;
+                case "6":
+                    readFromFileCli();
+                    break;
+                case "0":
+                    return;
+                default:
+                    Console.WriteLine("Invalid option.");
+                    break;
+            }
+
+            Console.WriteLine();
+        }
+    }
+
+    static void printMenu()
+    {
+        Console.WriteLine("==== AVL Tree CLI ====");
+        Console.WriteLine("1. Insert node");
+        Console.WriteLine("2. Delete node");
+        Console.WriteLine("3. Find node");
+        Console.WriteLine("4. L procedure");
+        Console.WriteLine("5. Print tree");
+        Console.WriteLine("6. Read instructions from file");
+        Console.WriteLine("0. Exit");
+        Console.WriteLine("======================");
+    }
+
+    static bool tryReadFloat(out float value)
+    {
+        Console.Write("Enter value: ");
+        return float.TryParse(Console.ReadLine(), NumberStyles.Float, cul, out value);
+    }
+
+    static void insertCli()
+    {
+        if (!tryReadFloat(out float value))
+        {
+            Console.WriteLine("Invalid number.");
+            return;
+        }
+
+        count++;
+        root = AVL.insert(root, value);
+        Console.WriteLine($"[{count}] Inserted {value}");
+    }
+
+    static void deleteCli()
+    {
+        if (!tryReadFloat(out float value))
+        {
+            Console.WriteLine("Invalid number.");
+            return;
+        }
+
+        count++;
+        if (AVL.find(root, value))
+        {
+            root = AVL.delete(root, value);
+            Console.WriteLine($"[{count}] Deleted {value}");
+
+        }
+        else
+        {
+            Console.WriteLine($"[{count}] did not find {value}");
+        }
+    }
+
+    static void findCli()
+    {
+        if (!tryReadFloat(out float value))
+        {
+            Console.WriteLine("Invalid number.");
+            return;
+        }
+
+        count++;
+        if (AVL.find(root, value))
+            Console.WriteLine($"[{count}] Found {value}");
+        else
+            Console.WriteLine($"[{count}] Did not find {value}");
+    }
+
+    static void lProcedureCli()
+    {
+        if (!tryReadFloat(out float value))
+        {
+            Console.WriteLine("Invalid number.");
+            return;
+        }
+
+        count++;
+        Console.WriteLine(
+            $"[{count}] starting with {value}: {AVL.countOccurrences(root, (int)value)}"
+        );
+    }
+
+    static void printTreeCli()
+    {
+        Console.WriteLine("AVL tree structure:");
+        AVL.printTree(root, 5);
+    }
+
+    static void readFromFileCli()
+    {
+        Console.Write("Enter file path: ");
+        string? path = Console.ReadLine();
+
+        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+        {
+            Console.WriteLine("File not found.");
+            return;
+        }
+
+        string[] lines = File.ReadAllLines(path);
         int n = int.Parse(lines[0]);
-        CultureInfo cul = new CultureInfo("de-DE"); // formatting floats properly (eu format)
 
         Stopwatch sw = new();
         sw.Start();
 
-        (char command, float value)[] commands = new (char, float)[n];
         for (int i = 1; i <= n; i++)
         {
             string[] parts = lines[i].Split();
-            char operation = parts[0][0];
+            char command = parts[0][0];
             float key = float.Parse(parts[1], cul);
-            commands[i - 1] = (operation, key);
+
+            count++;
+
+            switch (command)
+            {
+                case 'W':
+                    root = AVL.insert(root, key);
+                    break;
+                case 'U':
+                    root = AVL.delete(root, key);
+                    break;
+                case 'S':
+                    if (AVL.find(root, key))
+                        Console.WriteLine($"[{count}] Found {key}");
+                    else
+                        Console.WriteLine($"[{count}] Did not find {key}");
+                    break;
+                case 'L':
+                    Console.WriteLine(
+                        $"[{count}] starting with {key}: {AVL.countOccurrences(root, (int)key)}"
+                    );
+                    break;
+            }
         }
 
-        // proper execution
-        for (int i = 0; i < n; i++)
-        {
-            parseCommand(commands[i], ref root, ref count);
-        }
-        // printTree(root, 5);
         sw.Stop();
-        System.Console.WriteLine($"\x1b[1;35mexecution time: {sw.ElapsedMilliseconds}ms\x1b[0m");
+        Console.WriteLine($"execution time: {sw.ElapsedMilliseconds}ms");
     }
 }
