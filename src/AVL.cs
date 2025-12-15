@@ -1,26 +1,8 @@
-﻿using System.Diagnostics;
-using System.Globalization;
+using System.Runtime.InteropServices;
 
-public class Node
-{
-    public Node? left;
-    public Node? right;
-    public float value;
-    public int height { get; set; }
-    public Node(float value)
-    {
-        left = null;
-        right = null;
-        this.value = value;
-        height = 1;
-    }
-}
-
-
-class Program
+public class AVL
 {
     static int max(int a, int b) { return (a > b) ? a : b; }
-
     static int Height(Node? n)
     {
         return n?.height ?? 0;
@@ -81,7 +63,7 @@ class Program
         return b;
     }
 
-    static Node insert(Node? root, float val)
+    public static Node insert(Node? root, float val)
     {
         if (root == null)
             return new(val);
@@ -95,31 +77,34 @@ class Program
         int bf = balanceFactor(root);
         int bfr = balanceFactor(root.right);
         int bfl = balanceFactor(root.left);
-        // 1. RR: (bf(root) > 1 & bf(root.left) == 1) => rotateRight
+
+        // 1. RR rotation: (bf(root) > 1 & bf(root.left) == 1)
         if (bf > 1 && bfl == 1)
             return rotateRight(root);
 
-        // 2. LL: (bf(root) < -1 & bf(root.right) == -1) => rotateLeft
+        // 2. LL rotation: (bf(root) < -1 & bf(root.right) == -1)
         if (bf < -1 && bfr == -1)
             return rotateLeft(root);
 
-        // 3. LR: (bf(root) > 1 & bf(root.left) == -1) => rotateLeft => rotateRight
+        // 3. LR rotation: (bf(root) > 1 & bf(root.left) == -1)
         if (bf > 1 && bfl == -1)
         {
             root.left = rotateLeft(root.left);
             return rotateRight(root);
 
         }
-        // 4. RL: (bf(root) > 1 & bf(root.left) == -1) => rotateLeft => rotateRight
+
+        // 4. RL rotation: (bf(root) > 1 & bf(root.left) == -1)
         if (bf < -1 && bfr == 1)
         {
             root.right = rotateRight(root.right);
             return rotateLeft(root);
         }
+
         return root;
     }
 
-    static bool find(Node? root, float val)
+    public static bool find(Node? root, float val)
     {
         if (root == null) return false;
 
@@ -140,18 +125,74 @@ class Program
         return curr!;
     }
 
-    static void printTree(Node? root, int indent)
+    public static Node delete(Node? root, float val)
+    {
+        if (root == null)
+            return root!;
+
+        if (root.value > val)
+        {
+            root.left = delete(root.left, val);
+        }
+        else if (root.value < val)
+        {
+            root.right = delete(root.right, val);
+        }
+        else // if we're here, that means that we've found the value we're looking to delete
+        {
+            if (root.left == null) // either 1 or no children
+                return root.right!;
+            if (root.right == null)
+                return root.left;
+            // if two children, replace tgt node with next in line
+            Node next = nextInOrder(root);
+            root.value = next.value;
+            root.right = delete(root.right, next.value);
+        }
+        root.height = max(Height(root.left), Height(root.right));
+
+        int bf = balanceFactor(root);
+        int bfr = balanceFactor(root.right);
+        int bfl = balanceFactor(root.left);
+
+        // 1. RR rotation: (bf(root) > 1 & bf(root.left) == 1)
+        if (bf > 1 && bfl == 1)
+            return rotateRight(root);
+
+        // 2. LL rotation: (bf(root) < -1 & bf(root.right) == -1)
+        if (bf < -1 && bfr == -1)
+            return rotateLeft(root);
+
+        // 3. LR rotation: (bf(root) > 1 & bf(root.left) == -1)
+        if (bf > 1 && bfl == -1)
+        {
+            root.left = rotateLeft(root.left);
+            return rotateRight(root);
+
+        }
+
+        // 4. RL rotation: (bf(root) > 1 & bf(root.left) == -1)
+        if (bf < -1 && bfr == 1)
+        {
+            root.right = rotateRight(root.right);
+            return rotateLeft(root);
+        }
+
+        return root;
+    }
+
+    public static void printTree(Node? root, int indent)
     {
         if (root != null)
         {
             printTree(root.right, indent + 4);
             if (indent > 0)
                 Console.Write(" ".PadLeft(indent));
-            Console.WriteLine($"{(root.value)}");
+            Console.WriteLine($"{root.value}");
             printTree(root.left, indent + 4);
         }
     }
-    static int countOccurrences(Node? root, int key)
+    public static int countOccurrences(Node? root, int key)
     {
         if (root == null)
             return 0;
@@ -163,70 +204,4 @@ class Program
              + countOccurrences(root.right, key);
     }
 
-    static void parseCommand((char command, float value) operation, ref Node? root, ref int count)
-    {
-        count++; // count of operations for speed tracking purposes
-        (char c, float key) = operation;
-        switch (c)
-        {
-            case 'W':
-                {
-                    root = insert(root, key);
-                    break;
-                }
-            // case 'U':
-            //     {
-            //         // root = delete(root, key);
-            //         break;
-            //     }
-            case 'S':
-                {
-                    if (find(root, key))
-                        System.Console.WriteLine($"[{count}] Found {key}");
-                    // System.Console.WriteLine($"TAK");
-                    else
-                        System.Console.WriteLine($"[{count}] Did not find {key}");
-                    // System.Console.WriteLine($"NIE");
-                    break;
-                }
-            // case 'L':
-            //     {
-            //         System.Console.WriteLine($"[{count}] starting with {key}: {countOccurrences(root, (int)key)}");
-            //         // System.Console.WriteLine(countOccurrences(root, (int)key));
-            //         break;
-            //     }
-            default:
-                break;
-        }
-    }
-    static void Main()
-    {
-        Node? root = null;
-        int count = 0;
-        string[] lines = File.ReadAllLines("./in/duzy1.txt");
-        int n = int.Parse(lines[0]);
-
-        Stopwatch sw = new();
-        sw.Start();
-
-        CultureInfo cul = new CultureInfo("de-DE"); // formatting floats properly (eu format)
-        (char command, float value)[] commands = new (char, float)[n];
-        for (int i = 1; i <= n; i++)
-        {
-            string[] parts = lines[i].Split();
-            char operation = parts[0][0];
-            float key = float.Parse(parts[1], cul);
-            commands[i - 1] = (operation, key);
-        }
-
-        // proper execution
-        for (int i = 0; i < n; i++)
-        {
-            parseCommand(commands[i], ref root, ref count);
-        }
-        // printTree(root, 5);
-        sw.Stop();
-        System.Console.WriteLine($"DONE! execution time: {sw.ElapsedMilliseconds}ms");
-
-    }
 }
