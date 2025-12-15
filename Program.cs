@@ -34,26 +34,49 @@ class Program
         //    /    \ 
         // (...)    b 
         //        /   \   
-        //      S1   (...)
+        //      sub   (...)
 
-        // S1 is the root of a subtree with a value between a and b
-
-        Node b = a!.right!;
-        Node S1 = b.left!;
+        Node? b = a!.right;
+        Node? sub = b!.left;
 
         b.left = a;
-        a.right = S1;
+        a.right = sub;
 
 
-        b.height = 1 + max(b.left.height, b.right!.height);
-        a.height = 1 + max(a.left!.height, a.right.height);
+        b.height = 1 + max(b.left.height, b.right.height);
+        a.height = 1 + max(a.left.height, a.right.height);
         //          b
         //        /   \
         //       a   (...)
         //     /  \
-        // (...)   S1
+        // (...)  sub
         return b;
     }
+
+    static Node rotateRight(Node? a)
+    {
+        //           a
+        //         /   \ 
+        //       b   (...)
+        //     /   \ 
+        //  (...)  sub
+        // 
+        Node b = a.left;
+        Node sub = b.right;
+
+        b.right = a;
+        a.left = sub;
+
+        b.height = 1 + max(b.left.height, b.right.height);
+        a.height = 1 + max(a.left.height, a.right.height);
+        //           b
+        //         /   \ 
+        //      (...)   a
+        //            /   \
+        //         sub   (...)
+        return a;
+    }
+
     static bool find(Node? root, float val)
     {
         if (root == null) return false;
