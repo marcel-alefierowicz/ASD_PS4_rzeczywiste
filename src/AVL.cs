@@ -1,5 +1,3 @@
-using System.Runtime.InteropServices;
-
 public class AVL
 {
     static int max(int a, int b) { return (a > b) ? a : b; }
@@ -22,11 +20,8 @@ public class AVL
 
         Node? b = a!.right;
         Node? sub = b!.left;
-
         b.left = a;
         a.right = sub;
-
-
         a.height = 1 + max(Height(a.left), Height(a.right));
         b.height = 1 + max(Height(b.left), Height(b.right));
         //          b
@@ -115,14 +110,14 @@ public class AVL
         return find(root.right, val);
     }
 
-    static Node nextInOrder(Node? curr)
+    static Node nextInOrder(Node? root)
     {
-        curr = curr?.right; // looking in the right subtree
-        while (curr != null && curr.left != null)
+        root = root?.right; // looking in the right subtree
+        while (root != null && root.left != null)
         {
-            curr = curr.left;
+            root = root.left;
         }
-        return curr!;
+        return root!;
     }
 
     public static Node delete(Node? root, float val)
